@@ -2,9 +2,9 @@ package com.domingues4j.evseer.business;
 
 import com.domingues4j.dto.housepower.HousePowerDataDTO;
 import com.domingues4j.dto.internal.SystemUpdateDTO;
-import com.domingues4j.evseer.business.facade.PowerDataFacade;
-import com.domingues4j.evseer.business.facade.PowerDeviceServiceException;
-import com.domingues4j.evseer.external.carcharger.CarChargerService;
+import com.domingues4j.evseer.business.facade.carcharger.CarChargerFacade;
+import com.domingues4j.evseer.business.facade.powerdevice.PowerDataFacade;
+import com.domingues4j.evseer.business.facade.powerdevice.PowerDeviceServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +16,18 @@ public class PowerMonitoringServiceImpl implements PowerMonitoringService {
 
     private static final Logger log = LoggerFactory.getLogger(PowerMonitoringServiceImpl.class);
 
-    private final CarChargerService carChargerService;
+    private final CarChargerFacade carChargerService;
     private final PowerDataFacade powerDataFacade;
-    private final double carChargingPowerInWatts;
+    private final double chargingOutletVoltage;
 
     @Autowired
     public PowerMonitoringServiceImpl(
             PowerDataFacade powerDataFacade,
-            CarChargerService carChargerService,
-            @Value("${electric.vehicle.charge.power.watts}") double carChargingPowerInWatts
-    ) {
+            CarChargerFacade carChargerService,
+            @Value("${charging.electrical.outlet.voltage}") double chargingOutletVoltage) {
         this.carChargerService = carChargerService;
         this.powerDataFacade = powerDataFacade;
-        this.carChargingPowerInWatts = carChargingPowerInWatts;
+        this.chargingOutletVoltage = chargingOutletVoltage;
     }
 
     @Override
@@ -37,8 +36,10 @@ public class PowerMonitoringServiceImpl implements PowerMonitoringService {
 
         log.info("Current house power status: {}", housePowerData);
 
-        boolean shouldCarCharge = housePowerData.getSolarPanelProduction().watts() > carChargingPowerInWatts;
-        carChargerService.requestChargingUpdate(shouldCarCharge);
+        // TODO replace 10 with the current configured Amps
+        boolean shouldCarCharge = housePowerData.getSolarPanelProduction().watts() > chargingOutletVoltage * 10;
+        System.out.println("Should car charge:" + shouldCarCharge);
+        //carChargerService.requestChargingUpdate(shouldCarCharge);
 
         return new SystemUpdateDTO(shouldCarCharge);
     }

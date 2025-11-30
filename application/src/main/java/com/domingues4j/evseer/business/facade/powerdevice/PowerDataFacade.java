@@ -1,4 +1,4 @@
-package com.domingues4j.evseer.business.facade;
+package com.domingues4j.evseer.business.facade.powerdevice;
 
 import com.domingues4j.api.powerdevice.response.InverterDataUnit;
 import com.domingues4j.api.powerdevice.response.RealTimeInverterDataResponse;
@@ -30,7 +30,7 @@ public class PowerDataFacade {
     public HousePowerDataDTO getSolarPowerData() throws PowerDeviceServiceException {
         RealTimeInverterDataResponse response = powerDeviceService.getDeviceRealTimeData();
 
-        if (!"success".equals(response.getMsg())) {
+        if (!"Operation successful".equals(response.getMsg())) {
             throw new PowerDeviceServiceException(response.getErrno() + response.getMsg());
         }
 
